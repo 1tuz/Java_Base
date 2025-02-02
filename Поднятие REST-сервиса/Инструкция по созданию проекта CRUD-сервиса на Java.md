@@ -1,4 +1,4 @@
-**Инструкция по настройке REST API с PostgreSQL, Hibernate, MapStruct, Swagger**
+
 
 ### 1. Создание структуры проекта
 
