@@ -1,4 +1,4 @@
-
+#jdk #jre #jvm #jit #bytecode
 ✅ **JDK (Java Development Kit)**
 - Набор инструментов для разработки на Java.
 - Включает **JRE**, **компилятор (`javac`)**, **библиотеки**, **утилиты**.
