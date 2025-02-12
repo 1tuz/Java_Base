@@ -1,4 +1,4 @@
-
+#rest #spring #crud #db #orm #гайд #mapstruct
 
 ### 1. Создание структуры проекта
 
