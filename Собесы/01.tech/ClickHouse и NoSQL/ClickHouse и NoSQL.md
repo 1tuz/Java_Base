@@ -1,4 +1,5 @@
 
+#sql #db #базы_данных #no_sql #clickhouse
 #### **ClickHouse**
 
 1. **Основы ClickHouse:**
