@@ -1,4 +1,5 @@
 
+#kubernetes #aws #собеседования 
 #### **AWS (Amazon Web Services)**
 
 1. **Основные сервисы AWS:**
