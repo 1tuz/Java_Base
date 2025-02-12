@@ -1,7 +1,7 @@
 ---
-aliases:
-  - Gradle/Maven
+aliases: []
 ---
+#gradle #maven
 - Gradle: Использует Groovy или Kotlin DSL для настройки, более гибок.
     
 - Maven: XML-конфигурация, подходит для стандартных проектов.
