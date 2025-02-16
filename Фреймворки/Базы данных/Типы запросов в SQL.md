@@ -1,5 +1,4 @@
-#sql #базы_данных #db #запросы #select #insert #update #delete #dr
-
+#sql #базы_данных #db #запросы #select #insert #update #delete #drop #alter
 
 
 - **SELECT**  
