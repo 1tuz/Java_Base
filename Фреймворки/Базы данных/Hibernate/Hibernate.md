@@ -1,5 +1,4 @@
 #hibernate #db #sql #базы_данных 
-Вот краткая шпаргалка по **Hibernate**:
 
 ### 1. **Что такое Hibernate?**
 
