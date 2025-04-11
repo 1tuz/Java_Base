@@ -63,6 +63,14 @@ my-app/
     <artifactId>lombok</artifactId>
     <optional>true</optional>
 </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+</dependency>
 ```
 
 ## 3. Код классов
@@ -414,20 +422,158 @@ public CompletableFuture<List<UserDto>> getAllAsync() {
 
 Не забудьте добавить `@EnableAsync` в конфигурационный класс или в класс приложения.
 
-### Кэширование результатов
+### Кэширование с Redis
+
+#### 1. Добавьте конфигурацию Redis:
 
 ```java
-@Cacheable(cacheNames = "users", key = "#id")
-@Override
-public UserDto getById(Long id) {
-    // ...
-}
-
-@CacheEvict(cacheNames = "users", key = "#id")
-@Override
-public void delete(Long id) {
-    // ...
+@Configuration
+@EnableCaching
+public class RedisConfig {
+    
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        // Настройка сериализатора для значений кэша
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.activateDefaultTyping(
+                objectMapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+        serializer.setObjectMapper(objectMapper);
+        
+        // Настройка конфигурации кэша Redis
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(10))  // Время жизни записей
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(serializer))
+                .disableCachingNullValues();  // Не кэшировать null-значения
+        
+        // Создаем разные конфигурации для разных кэшей
+        Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
+        cacheConfigurations.put("users", config.entryTtl(Duration.ofMinutes(5)));  // Кэш пользователей на 5 минут
+        
+        return RedisCacheManager.builder(connectionFactory)
+                .cacheDefaults(config)
+                .withInitialCacheConfigurations(cacheConfigurations)
+                .build();
+    }
+    
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        
+        // Настройка сериализаторов
+        Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        mapper.activateDefaultTyping(
+                mapper.getPolymorphicTypeValidator(),
+                ObjectMapper.DefaultTyping.NON_FINAL
+        );
+        serializer.setObjectMapper(mapper);
+        
+        // Сериализаторы для ключей и значений
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(serializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(serializer);
+        
+        template.afterPropertiesSet();
+        return template;
+    }
 }
 ```
 
-Добавьте `@EnableCaching` в конфигурационный класс или в класс приложения.
+#### 2. Добавьте настройки Redis в application.yml:
+
+```yaml
+spring:
+  # Существующие настройки...
+  redis:
+    host: localhost
+    port: 6379
+    # password: если настроен
+    timeout: 2000
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: false
+```
+
+#### 3. Используйте аннотации кэширования в сервисе:
+
+```java
+@Service
+@CacheConfig(cacheNames = "users")  // Указываем название кэша для всех методов класса
+public class UserServiceImpl implements UserService {
+    // ...
+    
+    @Override
+    @Cacheable(key = "#id")  // Кэширование по ID пользователя
+    public UserDto getById(Long id) {
+        return userMapper.toDto(userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+    }
+    
+    @Override
+    @CachePut(key = "#result.id")  // Обновление кэша после создания 
+    public UserDto create(UserDto dto) {
+        User user = userMapper.toEntity(dto);
+        return userMapper.toDto(userRepository.save(user));
+    }
+    
+    @Override
+    @CachePut(key = "#id")  // Обновление кэша после изменения
+    public UserDto update(Long id, UserDto dto) {
+        // ...код обновления...
+        return userMapper.toDto(updatedUser);
+    }
+    
+    @Override
+    @CacheEvict(key = "#id")  // Удаление из кэша после удаления сущности
+    public void delete(Long id) {
+        // ...код удаления...
+    }
+    
+    @CacheEvict(allEntries = true)  // Очистка всего кэша пользователей
+    @Scheduled(fixedRate = 86400000)  // Раз в день (в мс)
+    public void clearCache() {
+        // Метод будет автоматически очищать кэш каждые 24 часа
+    }
+}
+```
+
+#### 4. Пример прямой работы с Redis:
+
+```java
+@Service
+public class CustomCacheService {
+    private final RedisTemplate<String, Object> redisTemplate;
+    
+    public CustomCacheService(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+    
+    public void saveToCache(String key, Object value, Duration ttl) {
+        redisTemplate.opsForValue().set(key, value, ttl);
+    }
+    
+    public <T> T getFromCache(String key, Class<T> type) {
+        return type.cast(redisTemplate.opsForValue().get(key));
+    }
+    
+    public void removeFromCache(String key) {
+        redisTemplate.delete(key);
+    }
+    
+    // Использование для пользовательских сессий
+    public void saveUserSession(Long userId, UserSession session) {
+        String key = "session:user:" + userId;
+        redisTemplate.opsForValue().set(key, session, Duration.ofHours(2));
+    }
+}
+```
