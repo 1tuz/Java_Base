@@ -1,0 +1,23 @@
+Спрашивают постоянно
+[[1. N+1, как решить. (EntityGraph, join fetch)]]
+[[2. Как реализована ленивая инициализация в Hibernate]]
+[[3. Как избежать LazyInitializationException]]
+[[4. Маппинг ассоциаций (ManyToMany OneToOne ManyToOne OneToMany @JoinColumn и @JoinTable)]]
+[[5. FetchType.Eager и Lazy]]
+[[6. Constraints. Какие вы знаете.]]
+[[7. ORM и JPA]]
+Иногда спрашивают:
+[[1. Каскады, каскадные операции(CascadeType)]]
+[[2. Какие @GeneratedValue вы знаете]]
+[[3. PQL HQL чем отличается от SQL]]
+[[4. Расскажите про 3 нормальные формы]]
+[[5. В общих чертах знать как пользоваться JDBC(Statement, PreparedStatement, Connection, ResultSet)]]
+[[6. sql-injection (SQL инъекции)]]
+[[7. Cтратегии маппинга иерархии наследования (Inheritance Mapping Strategies)]]
+[[8. Каким условиям должен удовлетворять класс чтобы являться Entity]]
+[[9. Что такое Criteria API и Query DSL. для чего используется(сильно не углубляйтесь)]]
+Спрашивают редко:
+[[1. Что такое Persistence Context]]
+[[2. Что такое EntityManager]]
+[[3. Что такое Mapped Superclass]]
+[[4. @Embedded и @Embeddable]]

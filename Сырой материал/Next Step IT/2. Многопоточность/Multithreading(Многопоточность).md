@@ -1,0 +1,26 @@
+Спрашивают постоянно:
+[[1. Чем процесс отличается от потока.]]
+[[2. Thread и Runnable]]
+[[3. Что такое монитор (на практике не используется)]]
+[[4. Synchronized (на практике не используется)]]
+[[5. Volatile. Почему операции над volatile переменными не атомарны]]
+[[6. Atomic(механизм CAS)]]
+[[7. Расскажи про правило happens-before в Java Memory Model (JMM)]]
+[[8. Что такое deadlock, race condition]]
+[[9. ThreadLocal]]
+[[10. ExecutorService, пулы потоков]]
+Иногда спрашивают:
+[[1. Object wait(), notify() и notifyAll()]]
+[[2. Что такое потоки демоны]]
+[[3. Чем Runnable отличается от Callable]]
+[[4. livelock]]
+Спрашивают редко:
+[[1. Расскажи про устройство и алгоритм работы ConcurrentHashMap]]
+[[2. В каких состояниях может находиться поток]]
+[[3. Как правильно остановить поток]]
+[[4. Что такое Future(CompletableFuture)]]
+[[5. ForkJoinPool в Stream API(где используется)]]
+Очень редкие: 
+[[1. ExecutorService(пулы потоков)]]
+[[2. Инструменты из java.util.сoncurrent(Lock, Condition, Semaphor, CountDownLatch….)]]
+[[3. Что знаешь про CopyOnWriteArrayList.]]
